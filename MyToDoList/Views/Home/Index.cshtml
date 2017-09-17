@@ -1,0 +1,124 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script>
+
+    angular.module("app", [])
+        .filter("createDate", function () {
+            var re = /\/Date\(([0-9]*)\)\//;
+            return function (x) {
+                var m = x.match(re);
+                if (m) return new Date(parseInt(m[1]));
+                else return null;
+            };
+        })
+        .controller("ctrl", function ($scope, $http) {
+
+            $scope.List = [];
+            $scope.Info = "";
+
+
+            $scope.Add = function () {
+                $http.post("@Url.Action("Add","Home")", {
+                    Info: $scope.Info
+
+                }).then(function (res) {
+                    $scope.List.push(res.data);
+                    $scope.Info = "";
+                });
+
+            }
+
+            $scope.IsConclude = function (mytodo) {
+                $http.post("@Url.Action("IsConclude", "Home")", {
+                    Id: mytodo.Id
+                }).then(function (res) {
+
+                });
+            }
+
+            $scope.Delete = function (mytodo, index) {
+                $http.post("@Url.Action("Delete","Home")", { Id: mytodo.Id }).then(function (res) {
+                    $scope.List.splice(index, 1);
+                });
+            }
+
+            $scope.init = function () {
+                $http.get("@Url.Action("List","Home")", {}).then(function (res) {
+                    $scope.List = res.data;
+                });
+            }
+        });
+
+</script>
+
+<style>
+    .IsConclude {
+        text-decoration: line-through;
+        color: #ccc;
+    }
+
+    .todo-text {
+        background: #fff !important;
+        width: 95% !important;
+    }
+</style>
+
+    <div class="navbar navbar-inverse top-header navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("My To-Do List", "Index", "Home", new { area = "" }, new { @class = "navbar-brand baslık" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content icerik">
+        <div class="container" style="width:50%;margin:auto;" ng-app="app">
+            <div>
+                <br />
+            </div>
+            <div ng-init="init()" class="col-md-12" ng-controller="ctrl">
+                <h2><i></i>My To-Do List</h2>
+                
+                <div class="input-group">
+                    <input type="text" ng-model="Info" class="form-control" aria-describedby="sizing-addon2" placeholder="Create New...">
+                    <span class="input-group-btn">
+                        <button class="btn btn-secondary" " type="submit" ng-click="Add()"><i class="glyphicon glyphicon-ok"> Save</i></button>
+                    </span>
+                </div>
+                <div>
+                    <br />
+
+                </div>
+
+                <div class="list-group">
+                    <a href="javascript:;" class="list-group-item" ng-repeat="mytodo in List">
+                        <div class="input-group">
+                            <p class="tamam"><i class="glyphicon glyphicon-calendar"></i> {{mytodo.CrtDate | createDate | date: 'dd-MM-yyyy'}}</p>
+                            <span class="input-group-addon" ng-click="IsConclude(mytodo)">
+                                <input type="checkbox" id="IsConclude" ng-model="mytodo.IsConclude" />
+                            </span>
+                            <input class="form-control todo-text" ng-class="{'IsConclude':mytodo.IsConclude}" ng-model="mytodo.Info" />
+                            <span class="input-group-btn">
+                                <button class="btn btn-secondary" type="button" ng-click="Delete(mytodo,$index)"><i class="glyphicon glyphicon-trash"> Delete </i></button>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        <hr />
+    </div>
+
+   
